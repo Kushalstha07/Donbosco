@@ -2,7 +2,6 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import {
   ArrowRight,
   ArrowUpRight,
-  ChevronDown,
   ChevronLeft,
   ChevronRight,
   Download,
@@ -11,7 +10,6 @@ import {
   Image as ImageIcon,
   Mail,
   MapPin,
-  Menu,
   Phone,
   Play,
   School,
@@ -20,6 +18,7 @@ import {
 } from "lucide-react";
 import content from "./source-content.json";
 import NextHome from "./NextHome.jsx";
+import PageDepth from "./PageDepth.jsx";
 import {
   ProgramPage,
   DonBoscoPage,
@@ -29,7 +28,12 @@ import {
 } from "./CuratedPages.jsx";
 
 const NavigationContext = createContext(() => {});
-const media = (name) => `/images/${name}.webp`;
+const bundledImages = import.meta.glob("./assets/images/*.webp", {
+  eager: true,
+  query: "?url",
+  import: "default",
+});
+const media = (name) => bundledImages[`./assets/images/${name}.webp`];
 const official = "https://nepaldonbosco.com";
 const annualReport = `${official}/uploads/20230522163707.pdf`;
 
@@ -38,12 +42,8 @@ const groups = [
     label: "About",
     items: [
       ["Don Bosco", "/about/don-bosco", "about-don-bosco"],
-      ["Facets of history", "/about/history", "facets-of-history"],
-      ["Management council", "/about/management-council", "management-council"],
-      ["Our Rector Major", "/about/rector-major", "our-rector-major"],
-      ["Our Provincial", "/about/provincial", "our-provincial"],
-      ["Former Rector", "/about/former-rector", "former-rector"],
-      ["Former Principal", "/about/former-principal", "former-principal"],
+      ["Our Story", "/about/history", "facets-of-history"],
+      ["Leadership", "/about/leadership", "about-leadership"],
       ["Annual reports", "/about/annual-reports", "annual-reports"],
     ],
   },
@@ -104,19 +104,30 @@ const legacy = Object.fromEntries(
     .filter((page) => page.id !== "annual-reports")
     .map((page) => [`/${page.id}.php`, page.path]),
 );
+const retiredAboutRoutes = Object.fromEntries(
+  [
+    ["management-council", "management-council"],
+    ["rector-major", "our-rector-major"],
+    ["provincial", "our-provincial"],
+    ["former-rector", "former-rector"],
+    ["former-principal", "former-principal"],
+  ].flatMap(([path, id]) => [
+    [`/about/${path}`, "/about/leadership"],
+    [`/${id}.php`, "/about/leadership"],
+  ]),
+);
+const canonicalPath = (pathname) => {
+  const clean = pathname.replace(/\/$/, "") || "/";
+  return retiredAboutRoutes[clean] || legacy[clean] || clean;
+};
 
 const pageDescriptions = {
   "about-don-bosco":
     "The person, purpose and educational philosophy behind the Salesian tradition.",
   "facets-of-history":
     "The story of Nepal Don Bosco School & College, from its foundation in Siddhipur to today.",
-  "management-council":
-    "The school leadership serving the Nepal Don Bosco community.",
-  "our-rector-major":
-    "Learn about the leadership of the worldwide Salesian family.",
-  "our-provincial": "The Salesian province and its connection to our school.",
-  "former-rector": "Recognising those who have helped guide our school.",
-  "former-principal": "A record of past principals and their contribution.",
+  "about-leadership":
+    "The people guiding the school and its place in the wider Salesian family.",
   "annual-reports":
     "School publications and reports available from the official website.",
   "teaching-staff":
@@ -156,19 +167,17 @@ const pageImages = {
 };
 
 function useRoute() {
-  const [path, setPath] = useState(
-    () =>
-      legacy[window.location.pathname] ||
-      window.location.pathname.replace(/\/$/, "") ||
-      "/",
-  );
+  const [path, setPath] = useState(() => canonicalPath(window.location.pathname));
   useEffect(() => {
-    const onPop = () =>
-      setPath(
-        legacy[window.location.pathname] ||
-          window.location.pathname.replace(/\/$/, "") ||
-          "/",
-      );
+    const onPop = () => {
+      const canonical = canonicalPath(window.location.pathname);
+      if (window.location.pathname !== canonical)
+        window.history.replaceState({}, "", canonical);
+      setPath(canonical);
+    };
+    const canonical = canonicalPath(window.location.pathname);
+    if (window.location.pathname !== canonical)
+      window.history.replaceState({}, "", canonical);
     window.addEventListener("popstate", onPop);
     return () => window.removeEventListener("popstate", onPop);
   }, []);
@@ -285,7 +294,6 @@ function Header({ path }) {
                   onClick={() => setOpenGroup(openGroup === i ? null : i)}
                 >
                   {group.label}
-                  <ChevronDown size={14} />
                 </button>
                 <div className="nav-dropdown">
                   <div className="nx-menu-heading">
@@ -300,7 +308,6 @@ function Header({ path }) {
                     {group.items.map(([label, to]) => (
                       <Link to={to} key={to} onClick={close}>
                         {label}
-                        <ArrowUpRight size={16} />
                       </Link>
                     ))}
                   </div>
@@ -322,7 +329,7 @@ function Header({ path }) {
               Contact
             </Link>
             <Link to="/school/admission" className="nav-apply" onClick={close}>
-              Admissions <ArrowUpRight size={15} />
+              Admissions
             </Link>
           </nav>
           <button
@@ -331,7 +338,7 @@ function Header({ path }) {
             aria-label="Search site"
             onClick={() => setSearchOpen(true)}
           >
-            <Search size={20} />
+            Search
           </button>
           <button
             className="menu-toggle"
@@ -341,7 +348,7 @@ function Header({ path }) {
             aria-expanded={mobileOpen}
             onClick={() => setMobileOpen(!mobileOpen)}
           >
-            {mobileOpen ? <X size={23} /> : <Menu size={23} />}
+            {mobileOpen ? "Close" : "Menu"}
           </button>
         </div>
       </header>
@@ -364,11 +371,10 @@ function Header({ path }) {
                 onClick={() => setSearchOpen(false)}
                 aria-label="Close search"
               >
-                <X size={22} />
+                Close
               </button>
             </div>
             <label>
-              <Search size={24} />
               <input
                 autoFocus
                 value={query}
@@ -386,7 +392,6 @@ function Header({ path }) {
                   <Link to={page.path} key={page.path} onClick={close}>
                     <span>{page.group}</span>
                     <strong>{page.label}</strong>
-                    <ArrowUpRight size={19} />
                   </Link>
                 ))
               ) : (
@@ -507,6 +512,7 @@ function GenericPage({ page, children }) {
           </article>
         </div>
       </section>
+      <PageDepth id={page.id} media={media} />
       <Related page={page} />
     </main>
   );
@@ -1237,85 +1243,63 @@ function AlumniPage({ page }) {
     </GenericPage>
   );
 }
-function LeadershipPage({ page }) {
-  const blocks = content[page.id] || [];
-  const currentLeaders = {
-    "our-rector-major": {
+function AboutLeadershipPage({ page }) {
+  const readPeople = (id) => {
+    const blocks = content[id] || [];
+    return blocks.flatMap((block, index) =>
+      block.type === "heading" && block.text?.toLowerCase() !== "sample"
+        ? [{ name: block.text, role: blocks[index + 1]?.type === "paragraph" ? blocks[index + 1].text : "" }]
+        : [],
+    );
+  };
+  const council = readPeople("management-council");
+  const former = [
+    ...readPeople("former-rector").map((person) => ({ ...person, title: "Former Rector" })),
+    ...readPeople("former-principal").map((person) => ({ ...person, title: "Former Principal" })),
+  ];
+  const salesianLeaders = [
+    {
       name: "Fr. Fabio Attard SDB",
       role: "Rector Major of the Salesians of Don Bosco",
-      description:
-        "Fr. Fabio Attard is the 11th successor of Don Bosco and leads the worldwide Salesian congregation. His work continues the Salesian mission of accompanying and educating young people.",
-      source:
-        "https://donboscosouthasia.org/News-Info?id=12033&title=Fr.-Sunil-Kerketta-Installed-as-18th-Provincial-of-Kolkata-Salesians",
+      description: "The 11th successor of Don Bosco, guiding the worldwide Salesian congregation and its mission of accompanying young people.",
     },
-    "our-provincial": {
+    {
       name: "Fr. Sunil Kerketta SDB",
       role: "Provincial of the Salesian Province of Kolkata",
-      description:
-        "Fr. Sunil Kerketta was installed as the 18th Provincial of Kolkata on 8 February 2026. The province serves communities across India, Bangladesh and Nepal.",
-      source:
-        "https://donboscosouthasia.org/News-Info?id=12033&title=Fr.-Sunil-Kerketta-Installed-as-18th-Provincial-of-Kolkata-Salesians",
+      description: "Installed as the 18th Provincial of Kolkata on 8 February 2026. The province serves communities across India, Bangladesh and Nepal.",
     },
-  };
-  if (currentLeaders[page.id]) {
-    const leader = currentLeaders[page.id];
-    return (
-      <GenericPage page={page}>
-        <div className="content-intro">
-          <span className="eyebrow">Salesian leadership</span>
-          <h2>Leadership in the spirit of Don Bosco.</h2>
-          <p>{pageDescriptions[page.id]}</p>
-        </div>
-        <div className="current-leader">
-          <span className="leader-monogram" aria-hidden="true">
-            SDB
-          </span>
-          <div>
-            <span className="eyebrow">{leader.role}</span>
-            <h3>{leader.name}</h3>
-            <p>{leader.description}</p>
-            <a
-              href={leader.source}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-action"
-            >
-              Read the Salesian announcement <ExternalLink size={16} />
-            </a>
-          </div>
-        </div>
-      </GenericPage>
-    );
-  }
-  const people = [];
-  for (let i = 0; i < blocks.length; i++)
-    if (blocks[i].type === "heading")
-      people.push({
-        name: blocks[i].text,
-        role: blocks[i + 1]?.type === "paragraph" ? blocks[i + 1].text : "",
-      });
+  ];
+  const announcement = "https://donboscosouthasia.org/News-Info?id=12033&title=Fr.-Sunil-Kerketta-Installed-as-18th-Provincial-of-Kolkata-Salesians";
   return (
     <GenericPage page={page}>
-      <div className="content-intro">
-        <span className="eyebrow">People & leadership</span>
-        <h2>
-          {page.id === "management-council"
-            ? "Guiding our community."
-            : "A legacy of service."}
-        </h2>
-        <p>{pageDescriptions[page.id]}</p>
+      <div className="about-lead-intro">
+        <div>
+          <span className="cv-index">ONE SCHOOL, A WIDER SALESIAN FAMILY</span>
+          <h2>People who guide our community.</h2>
+          <p>School leadership, Salesian guidance and the service of those who came before all contribute to the story of Nepal Don Bosco.</p>
+        </div>
+        <img src={media("community")} alt="Nepal Don Bosco school community together" />
       </div>
-      <div className="leader-grid">
-        {people
-          .filter((p) => p.name.toLowerCase() !== "sample")
-          .map((person, i) => (
-            <div className="leader-card" key={person.name}>
-              <span>0{i + 1}</span>
-              <h3>{person.name}</h3>
-              <p>{person.role}</p>
-            </div>
-          ))}
-      </div>
+      <section className="about-lead-section" aria-labelledby="school-leaders-heading">
+        <div className="about-lead-section-head"><span className="cv-index">01 / AT THE SCHOOL</span><h2 id="school-leaders-heading">School leadership</h2><p>The management council named in the school's published directory.</p></div>
+        <div className="about-lead-grid">
+          {council.map((person) => <article className="about-lead-card" key={person.name}><span>NEPAL DON BOSCO</span><h3>{person.name}</h3><p>{person.role}</p></article>)}
+        </div>
+      </section>
+      <section className="about-lead-section" aria-labelledby="salesian-leaders-heading">
+        <div className="about-lead-section-head"><span className="cv-index">02 / THE SALESIAN FAMILY</span><h2 id="salesian-leaders-heading">Wider leadership</h2><p>The worldwide congregation and the Kolkata province connect our school to a much broader educational mission.</p></div>
+        <div className="about-lead-grid about-lead-grid-two">
+          {salesianLeaders.map((person) => <article className="about-lead-card" key={person.name}><span>{person.role}</span><h3>{person.name}</h3><p>{person.description}</p></article>)}
+        </div>
+        <a href={announcement} target="_blank" rel="noopener noreferrer" className="text-action">Read the Salesian announcement</a>
+      </section>
+      <section className="about-lead-section" aria-labelledby="former-leaders-heading">
+        <div className="about-lead-section-head"><span className="cv-index">03 / WITH GRATITUDE</span><h2 id="former-leaders-heading">Former leaders</h2><p>Recognising people whose service helped shape the school.</p></div>
+        <div className="about-lead-grid about-lead-grid-two">
+          {former.map((person) => <article className="about-lead-card" key={person.name}><span>{person.title}</span><h3>{person.name}</h3><p>{person.role}</p></article>)}
+        </div>
+      </section>
+      <p className="about-lead-note">Names and roles are adapted from published school and Salesian sources; please confirm current appointments with the school.</p>
     </GenericPage>
   );
 }
@@ -1332,13 +1316,13 @@ function Footer() {
             </p>
             <div className="footer-social">
               <a href="tel:+97715709283" aria-label="Call school">
-                <Phone size={18} />
+                Call
               </a>
               <a
                 href="mailto:ndbssiddhipur@gmail.com"
                 aria-label="Email school"
               >
-                <Mail size={18} />
+                Email
               </a>
               <a
                 href="https://www.google.com/maps/search/?api=1&query=Nepal+Don+Bosco+School+Siddhipur+Lalitpur"
@@ -1346,7 +1330,7 @@ function Footer() {
                 rel="noopener noreferrer"
                 aria-label="Find school"
               >
-                <MapPin size={18} />
+                Directions
               </a>
             </div>
           </div>
@@ -1369,7 +1353,7 @@ function Footer() {
                 </Link>
               ))}
               <a href={official} target="_blank" rel="noopener noreferrer">
-                Current website <ExternalLink size={13} />
+                Current website
               </a>
             </div>
           </div>
@@ -1500,16 +1484,8 @@ export default function App() {
         <DownloadsPage page={page} report={page.id === "annual-reports"} />
       );
     if (page.id === "alumni") return <AlumniPage page={page} />;
-    if (
-      [
-        "management-council",
-        "former-rector",
-        "former-principal",
-        "our-provincial",
-        "our-rector-major",
-      ].includes(page.id)
-    )
-      return <LeadershipPage page={page} />;
+    if (page.id === "about-leadership")
+      return <AboutLeadershipPage page={page} />;
     return <GenericPage page={page} />;
   };
   return (

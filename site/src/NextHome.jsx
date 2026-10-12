@@ -1,440 +1,175 @@
-import React, { useRef, useState } from "react";
-import {
-  ArrowDown,
-  ArrowLeft,
-  ArrowRight,
-  ArrowUpRight,
-  Compass,
-  Heart,
-  Sparkles,
-} from "lucide-react";
+import React, { useEffect, useRef, useState } from "react";
 
-const stories = [
+const stats = [
+  { label: "Experienced Teachers", value: 75, suffix: "+" },
+  { label: "Successful Graduates", value: 5000, suffix: "+" },
+  { label: "Academic Programs", value: 50, suffix: "+" },
+  { label: "Clubs & Activities", value: 20, suffix: "+" },
+];
+
+const paths = [
   {
-    image: "hero",
-    kicker: "A place to belong",
-    title: "Confidence starts with being seen.",
-    alt: "Students smiling together at Nepal Don Bosco",
+    name: "School", number: "01", eyebrow: "SCHOOL YEARS", title: "A strong beginning for every learner.",
+    body: "A broad English-medium education that brings together academic foundations, creative learning, sport and a sense of responsibility toward others.",
+    points: ["Academic foundations", "Creative learning", "Sport & culture"], image: "creative", href: "/school/admission",
   },
   {
-    image: "science-lab",
-    kicker: "A place to discover",
-    title: "Questions become possibilities.",
-    alt: "Students exploring a science practical",
+    name: "Science", number: "02", eyebrow: "+2 PATHWAY", title: "For minds that love to discover.",
+    body: "Explore scientific ideas through theory and practical investigation, with subject choices that include Biology and Computer Science.",
+    points: ["Physics & Chemistry", "Mathematics", "Practical learning"], image: "science-lab", href: "/plus-two/science",
   },
   {
-    image: "community",
-    kicker: "A place to grow",
-    title: "We learn better together.",
-    alt: "Students walking through the school courtyard",
+    name: "Management", number: "03", eyebrow: "+2 PATHWAY", title: "Make ideas work in the real world.",
+    body: "Study business, accounting and economics while developing a practical understanding of organisations and opportunity.",
+    points: ["Accounting", "Economics", "Business Studies"], image: "hospitality", href: "/plus-two/management",
+  },
+  {
+    name: "Humanities", number: "04", eyebrow: "+2 PATHWAY", title: "Understand people and perspectives.",
+    body: "Build insight into society, media and communication, and learn to consider the questions that shape our communities.",
+    points: ["Communication", "Sociology", "Social Studies"], image: "classroom", href: "/plus-two/humanities",
+  },
+  {
+    name: "Law", number: "05", eyebrow: "+2 PATHWAY", title: "Find your voice and use it well.",
+    body: "Begin exploring legal thought and practice through reading, discussion and applied experiences.",
+    points: ["Legal theory", "Constitutional law", "Legal drafting"], image: "investiture", href: "/plus-two/law",
   },
 ];
-const pathways = [
-  {
-    name: "School",
-    number: "01",
-    lead: "Build a strong beginning.",
-    copy: "A broad English-medium education that gives children the confidence to think, create, play and care for others.",
-    subjects: ["Academic foundations", "Creative learning", "Sport & culture"],
-    image: "student-life",
-    url: "/school/admission",
-  },
-  {
-    name: "Science",
-    number: "02",
-    lead: "Ask better questions.",
-    copy: "Study Physics, Chemistry and Mathematics alongside Biology or Computer Science, supported by practical work in the labs.",
-    subjects: ["Physics", "Chemistry", "Biology", "Computer Science"],
-    image: "science-lab",
-    url: "/plus-two/science",
-  },
-  {
-    name: "Management",
-    number: "03",
-    lead: "Make ideas work.",
-    copy: "Explore business, accounting and economics, with choices that connect classroom thinking to the real world.",
-    subjects: [
-      "Accounting",
-      "Economics",
-      "Business Studies",
-      "Hotel Management",
-    ],
-    image: "hospitality",
-    url: "/plus-two/management",
-  },
-  {
-    name: "Humanities",
-    number: "04",
-    lead: "Understand people.",
-    copy: "Look at society, media and communication from different perspectives while building a strong foundation for further study.",
-    subjects: ["Mass Communication", "Sociology", "Social Studies"],
-    image: "creative",
-    url: "/plus-two/humanities",
-  },
-  {
-    name: "Law",
-    number: "05",
-    lead: "Find your voice.",
-    copy: "Begin to understand legal thought and practice through study, discussion and applied experiences.",
-    subjects: ["Legal theory", "Constitutional law", "Legal drafting"],
-    image: "investiture",
-    url: "/plus-two/law",
-  },
+
+const principles = [
+  { number: "01", title: "Reason", text: "Young people are encouraged to ask questions, think clearly and understand the world they are entering." },
+  { number: "02", title: "Faith & values", text: "Learning makes room for reflection, integrity and a sense of responsibility toward others." },
+  { number: "03", title: "Loving kindness", text: "A caring relationship helps every student feel known, trusted and supported." },
 ];
-const values = [
-  {
-    number: "01",
-    title: "Reason",
-    icon: Compass,
-    copy: "We help young people think clearly, ask questions and understand the world they are entering.",
-  },
-  {
-    number: "02",
-    title: "Faith & values",
-    icon: Sparkles,
-    copy: "We make room for reflection, integrity and a sense of responsibility towards others.",
-  },
-  {
-    number: "03",
-    title: "Loving kindness",
-    icon: Heart,
-    copy: "A caring relationship is the foundation of learning. Every student deserves to feel known and supported.",
-  },
-];
-const gallery = [
-  ["science-lab", "Learning by doing"],
-  ["sports", "Showing up for the team"],
-  ["celebration", "Moments worth sharing"],
-  ["creative", "Making and imagining"],
-  ["school-event", "Taking the stage"],
-];
+
+function SchoolCounters() {
+  const element = useRef(null);
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    const node = element.current;
+    if (!node) return;
+    let frame;
+    let started = false;
+    const observer = new IntersectionObserver(([entry]) => {
+      if (!entry.isIntersecting || started) return;
+      started = true;
+      observer.disconnect();
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        setProgress(1);
+        return;
+      }
+      const start = performance.now();
+      const tick = (now) => {
+        const elapsed = Math.min((now - start) / 1300, 1);
+        setProgress(1 - Math.pow(1 - elapsed, 3));
+        if (elapsed < 1) frame = requestAnimationFrame(tick);
+      };
+      frame = requestAnimationFrame(tick);
+    }, { threshold: 0.25 });
+    observer.observe(node);
+    return () => { observer.disconnect(); cancelAnimationFrame(frame); };
+  }, []);
+
+  return (
+    <div className="ch-stats" ref={element} aria-label="School figures">
+      <div className="container ch-stats-grid">
+        {stats.map((item) => (
+          <div className="ch-stat" key={item.label} aria-label={`${item.value.toLocaleString("en-US")}${item.suffix} ${item.label}`}>
+            <strong aria-hidden="true">{Math.round(item.value * progress).toLocaleString("en-US")}{item.suffix}</strong>
+            <span>{item.label}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export default function NextHome({ Link, media }) {
-  const [story, setStory] = useState(0);
-  const [pathway, setPathway] = useState(0);
-  const [value, setValue] = useState(0);
-  const rail = useRef(null);
-  const activePath = pathways[pathway];
+  const [activePath, setActivePath] = useState(0);
+  const selected = paths[activePath];
+
   return (
-    <main className="nx-home">
-      <section className="nx-hero" aria-labelledby="nx-hero-title">
-        <div className="nx-hero-grid container">
-          <div className="nx-hero-copy" data-reveal>
-            <span className="nx-kicker">
-              <span /> NEPAL DON BOSCO · SIDDHIPUR
-            </span>
-            <h1 id="nx-hero-title">
-              A school for
-              <br />
-              the lives <em>they’ll lead.</em>
-            </h1>
-            <p>
-              We believe a great education opens more than doors. It helps young
-              people become curious thinkers, kind neighbours and confident
-              versions of themselves.
-            </p>
-            <div className="nx-actions">
-              <Link to="/about/history" className="nx-button nx-button-lime">
-                Explore our school <ArrowUpRight size={18} />
-              </Link>
-              <Link to="/school/admission" className="nx-hero-link">
-                Admissions <ArrowRight size={17} />
-              </Link>
-            </div>
-            <div className="nx-hero-lower">
-              <span>SCROLL TO DISCOVER</span>
-              <ArrowDown size={18} />
-            </div>
+    <main className="ch-home">
+      <section className="ch-hero" aria-labelledby="ch-hero-title">
+        <div className="container ch-hero-grid">
+          <div className="ch-hero-copy">
+            <span className="ch-overline">NEPAL DON BOSCO · SIDDHIPUR, LALITPUR</span>
+            <h1 id="ch-hero-title">A place to <em>learn.</em><br />A place to <em>belong.</em></h1>
+            <p>We are a Salesian learning community where academic ambition meets care for the whole person. Students are encouraged to think, create, serve and grow into confident versions of themselves.</p>
+            <div className="ch-actions"><Link to="/about/history" className="ch-button ch-button-primary">Discover our school</Link><Link to="/school/admission" className="ch-text-link">Explore admissions</Link></div>
+            <div className="ch-hero-note">SCHOOL YEARS <span /> FOUR +2 PATHWAYS <span /> EST. 2002</div>
           </div>
-          <div className="nx-hero-art" data-reveal>
-            <div className="nx-photo-stage">
-              {stories.map((item, i) => (
-                <img
-                  key={item.image}
-                  className={story === i ? "is-current" : ""}
-                  src={media(item.image)}
-                  alt={item.alt}
-                />
-              ))}
-              <div className="nx-photo-label">
-                <small>{stories[story].kicker}</small>
-                <strong>{stories[story].title}</strong>
-              </div>
-            </div>
-            <div className="nx-story-select" aria-label="Choose a school story">
-              {stories.map((item, i) => (
-                <button
-                  key={item.image}
-                  type="button"
-                  className={story === i ? "active" : ""}
-                  aria-label={`Show story ${i + 1}: ${item.kicker}`}
-                  aria-pressed={story === i}
-                  onClick={() => setStory(i)}
-                >
-                  <span>0{i + 1}</span>
-                  <i />
-                </button>
-              ))}
-            </div>
-            <div className="nx-orbit-badge" aria-hidden="true">
-              <span>EST. 2002</span>
-              <strong>DB</strong>
-              <span>NEPAL</span>
-            </div>
-          </div>
+          <div className="ch-hero-photo"><img src={media("hero")} alt="Students smiling together at Nepal Don Bosco" /><div className="ch-photo-caption"><span>LIFE AT DON BOSCO</span><strong>Every student has a story to write.</strong></div></div>
         </div>
+        <SchoolCounters />
       </section>
 
-      <div className="nx-proof">
-        <div className="container nx-proof-inner">
-          <span>ROOTED IN THE SALESIAN TRADITION</span>
-          <span className="nx-proof-divider" />
-          <strong>
-            School years <i>→</i> +2 pathways
-          </strong>
-          <span className="nx-proof-divider" />
-          <span>MAHALAXMI-6, LALITPUR</span>
-        </div>
-      </div>
-
-      <section className="nx-intro nx-section">
-        <div className="container nx-intro-grid">
-          <div data-reveal>
-            <span className="nx-overline">01 / THE IDEA</span>
-            <h2>
-              More than what a student knows. <em>Who they become.</em>
-            </h2>
-          </div>
-          <div className="nx-intro-side" data-reveal>
-            <p>
-              At Don Bosco, we take the whole person seriously. Lessons matter.
-              So do friendships, questions, responsibility, sport, service and
-              the quiet confidence that comes from being encouraged.
-            </p>
-            <Link to="/about/don-bosco" className="nx-text-link">
-              The Don Bosco approach <ArrowUpRight size={17} />
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      <section className="nx-pathways nx-section" id="pathways">
+      <section className="ch-pathways ch-section" id="pathways" aria-labelledby="ch-pathways-title">
         <div className="container">
-          <div className="nx-section-top" data-reveal>
-            <div>
-              <span className="nx-overline">02 / FIND YOUR DIRECTION</span>
-              <h2>
-                There is more than <em>one way forward.</em>
-              </h2>
-            </div>
-            <p>
-              Explore the school years and four +2 streams. Each pathway has
-              room for what makes you curious.
-            </p>
+          <div className="ch-section-head"><span className="ch-overline">01 / LEARNING PATHWAYS</span><h2 id="ch-pathways-title">Room to find <em>your direction.</em></h2><p>From the school years through +2, students can explore the subjects and experiences that make them curious.</p></div>
+          <div className="ch-path-tabs" role="tablist" aria-label="Academic pathways">
+            {paths.map((path, index) => (
+              <button
+                key={path.name}
+                type="button"
+                role="tab"
+                id={`ch-tab-${index}`}
+                aria-controls="ch-panel"
+                aria-selected={activePath === index}
+                tabIndex={activePath === index ? 0 : -1}
+                className={activePath === index ? "active" : ""}
+                onClick={() => setActivePath(index)}
+                onKeyDown={(event) => {
+                  if (event.key !== "ArrowRight" && event.key !== "ArrowLeft") return;
+                  event.preventDefault();
+                  const next = (index + (event.key === "ArrowRight" ? 1 : -1) + paths.length) % paths.length;
+                  setActivePath(next);
+                  document.getElementById(`ch-tab-${next}`)?.focus();
+                }}
+              >
+                <img src={media(path.image)} alt="" loading="lazy" />
+                <span><small>{path.number}</small>{path.name}</span>
+              </button>
+            ))}
           </div>
-          <div className="nx-explorer" data-reveal>
-            <div
-              className="nx-path-tabs"
-              role="tablist"
-              aria-label="Academic pathways"
-            >
-              {pathways.map((item, i) => (
-                <button
-                  key={item.name}
-                  id={`nx-path-tab-${i}`}
-                  type="button"
-                  role="tab"
-                  aria-selected={pathway === i}
-                  aria-controls="nx-path-panel"
-                  tabIndex={pathway === i ? 0 : -1}
-                  className={pathway === i ? "active" : ""}
-                  onClick={() => setPathway(i)}
-                  onKeyDown={(e) => {
-                    let n = i;
-                    if (e.key === "ArrowDown" || e.key === "ArrowRight")
-                      n = (i + 1) % pathways.length;
-                    else if (e.key === "ArrowUp" || e.key === "ArrowLeft")
-                      n = (i - 1 + pathways.length) % pathways.length;
-                    else return;
-                    e.preventDefault();
-                    setPathway(n);
-                    document.getElementById(`nx-path-tab-${n}`)?.focus();
-                  }}
-                >
-                  <span>{item.number}</span>
-                  <strong>{item.name}</strong>
-                  <ArrowUpRight size={18} />
-                </button>
-              ))}
-            </div>
-            <div
-              className="nx-path-panel"
-              id="nx-path-panel"
-              role="tabpanel"
-              aria-labelledby={`nx-path-tab-${pathway}`}
-              key={activePath.name}
-            >
-              <div className="nx-path-photo">
-                <img
-                  src={media(activePath.image)}
-                  alt={`${activePath.name} students at Nepal Don Bosco`}
-                />
-              </div>
-              <div className="nx-path-copy">
-                <span className="nx-overline">
-                  {activePath.number} / {activePath.name.toUpperCase()}
-                </span>
-                <h3>{activePath.lead}</h3>
-                <p>{activePath.copy}</p>
-                <div className="nx-tags">
-                  {activePath.subjects.map((subject) => (
-                    <span key={subject}>{subject}</span>
-                  ))}
-                </div>
-                <Link to={activePath.url} className="nx-text-link">
-                  Explore {activePath.name} <ArrowUpRight size={17} />
-                </Link>
-              </div>
-            </div>
+          <div className="ch-path-panel" id="ch-panel" role="tabpanel" aria-labelledby={`ch-tab-${activePath}`} key={selected.name}>
+            <div className="ch-path-image"><img src={media(selected.image)} alt={`${selected.name} learning at Nepal Don Bosco`} /></div>
+            <div className="ch-path-detail"><span className="ch-overline">{selected.eyebrow}</span><h3>{selected.title}</h3><p>{selected.body}</p><div className="ch-path-points">{selected.points.map((point) => <span key={point}>{point}</span>)}</div><Link to={selected.href} className="ch-button ch-button-accent">Explore {selected.name}</Link></div>
           </div>
-          <p className="nx-note">
-            Course combinations and entry criteria can change. Confirm current
-            details with the school office.
-          </p>
+          <p className="ch-fine-print">Subjects and entry criteria may change. Please confirm current details with the school office.</p>
         </div>
       </section>
 
-      <section className="nx-photo-break" aria-label="School life">
-        <div className="nx-break-photo">
-          <img
-            src={media("community")}
-            alt="Students and families sharing a moment at Nepal Don Bosco"
-            loading="lazy"
-          />
-        </div>
-        <div className="nx-break-panel">
-          <span className="nx-overline">BEYOND THE CLASSROOM</span>
-          <h2>
-            The moments in between <em>make the difference.</em>
-          </h2>
-          <p>
-            Experiments, performances, team spirit and everyday friendships all
-            have a place here.
-          </p>
-          <Link to="/gallery/photos" className="nx-text-link">
-            See life at Don Bosco <ArrowUpRight size={17} />
-          </Link>
-        </div>
-      </section>
-
-      <section className="nx-values nx-section">
-        <div className="container nx-values-grid">
-          <div className="nx-values-lead" data-reveal>
-            <span className="nx-overline">03 / OUR WAY</span>
-            <h2>Care is part of the curriculum.</h2>
-            <p>
-              Don Bosco’s Preventive System is built on a simple idea: young
-              people grow best when learning is guided by trust, purpose and
-              presence.
-            </p>
-            <Link to="/about/don-bosco" className="nx-text-link">
-              Discover our approach <ArrowUpRight size={17} />
-            </Link>
-          </div>
-          <div className="nx-value-list" data-reveal>
-            {values.map((item, i) => {
-              const Icon = item.icon;
-              return (
-                <button
-                  type="button"
-                  className={`nx-value ${value === i ? "active" : ""}`}
-                  aria-expanded={value === i}
-                  key={item.title}
-                  onClick={() => setValue(i)}
-                >
-                  <span className="nx-value-num">{item.number}</span>
-                  <span className="nx-value-main">
-                    <strong>{item.title}</strong>
-                    {value === i && <small>{item.copy}</small>}
-                  </span>
-                  <Icon size={24} strokeWidth={1.5} />
-                </button>
-              );
-            })}
+      <section className="ch-life ch-section" aria-labelledby="ch-life-title">
+        <div className="container ch-life-grid">
+          <div className="ch-life-copy"><span className="ch-overline">02 / LIFE & VALUES</span><h2 id="ch-life-title">More than a school day. <em>A way to grow.</em></h2><p>Lessons matter. So do friendships, teamwork, sport, service and the quiet confidence that comes from being encouraged. Don Bosco’s Preventive System brings care into everyday learning.</p><div className="ch-principles">{principles.map((item) => <div className="ch-principle" key={item.number}><span>{item.number}</span><div><h3>{item.title}</h3><p>{item.text}</p></div></div>)}</div><Link to="/about/don-bosco" className="ch-text-link">Read about our approach</Link></div>
+          <div className="ch-life-photos">
+            <figure className="ch-life-photo-main"><img src={media("community")} alt="Students and families in the school courtyard" /><figcaption>Learning together, every day</figcaption></figure>
+            <div className="ch-life-photo-grid">
+              <figure><img src={media("science-lab")} alt="Students working in the science lab" /><figcaption>Discovery</figcaption></figure>
+              <figure><img src={media("sports")} alt="Student with a sports trophy" /><figcaption>Team spirit</figcaption></figure>
+              <figure><img src={media("school-event")} alt="Students taking part in a school event" /><figcaption>Expression</figcaption></figure>
+              <figure><img src={media("student-life")} alt="Students enjoying time together outdoors" /><figcaption>Belonging</figcaption></figure>
+            </div>
+            <Link to="/gallery/photos" className="ch-gallery-link">Explore the photo gallery</Link>
           </div>
         </div>
       </section>
 
-      <section className="nx-moments nx-section">
-        <div className="container nx-moments-head">
-          <div>
-            <span className="nx-overline">04 / HERE, TOGETHER</span>
-            <h2>
-              Life looks different from <em>every angle.</em>
-            </h2>
+      <section className="ch-next ch-section" aria-labelledby="ch-next-title">
+        <div className="container">
+          <div className="ch-next-head"><div><span className="ch-overline">03 / YOUR NEXT CHAPTER</span><h2 id="ch-next-title">Come and <em>see what is possible.</em></h2></div><p>Explore the route that fits your child, then speak with the school office about current places, dates and requirements.</p></div>
+          <div className="ch-admission-grid">
+            <article className="ch-admission-card">
+              <img src={media("campus")} alt="Nepal Don Bosco campus and courtyard" loading="lazy" />
+              <div className="ch-admission-content"><span>SCHOOL ADMISSIONS</span><h3>A strong start begins here.</h3><p>For families considering the school years.</p><ol><li>Ask the office about current vacancies.</li><li>Collect and complete the application form.</li><li>Meet the school for the relevant assessment.</li></ol><Link to="/school/admission" className="ch-button ch-button-primary">Explore school admissions</Link></div>
+            </article>
+            <article className="ch-admission-card">
+              <img src={media("investiture")} alt="Students celebrating at a school ceremony" loading="lazy" />
+              <div className="ch-admission-content"><span>+2 ADMISSIONS</span><h3>Choose the path ahead.</h3><p>For students ready to explore the +2 section.</p><ol><li>Review the available streams and requirements.</li><li>Apply and complete the entrance process.</li><li>Attend the interview with a parent or guardian.</li></ol><Link to="/plus-two/admission" className="ch-button ch-button-primary">Explore +2 admissions</Link></div>
+            </article>
           </div>
-          <div className="nx-rail-controls">
-            <button
-              type="button"
-              aria-label="Previous photos"
-              onClick={() =>
-                rail.current?.scrollBy({ left: -390, behavior: "smooth" })
-              }
-            >
-              <ArrowLeft size={21} />
-            </button>
-            <button
-              type="button"
-              aria-label="Next photos"
-              onClick={() =>
-                rail.current?.scrollBy({ left: 390, behavior: "smooth" })
-              }
-            >
-              <ArrowRight size={21} />
-            </button>
-          </div>
-        </div>
-        <div className="nx-moment-rail" ref={rail}>
-          {gallery.map(([photo, label], i) => (
-            <div className="nx-moment" key={photo}>
-              <img src={media(photo)} alt={label} loading="lazy" />
-              <span>
-                0{i + 1} / {label}
-              </span>
-            </div>
-          ))}
-        </div>
-        <div className="container nx-moments-foot">
-          <p>Every child finds their own way to shine.</p>
-          <Link to="/gallery/photos" className="nx-text-link">
-            Open the gallery <ArrowUpRight size={17} />
-          </Link>
-        </div>
-      </section>
-
-      <section className="nx-final">
-        <div className="container nx-final-inner">
-          <span className="nx-overline">THE NEXT CHAPTER STARTS HERE</span>
-          <h2>
-            Let’s see what
-            <br />
-            <em>they can become.</em>
-          </h2>
-          <p>
-            Whether you are exploring the school or a +2 stream, our team can
-            help you take the next step.
-          </p>
-          <div>
-            <Link to="/school/admission" className="nx-button nx-button-lime">
-              School admissions <ArrowUpRight size={18} />
-            </Link>
-            <Link
-              to="/plus-two/admission"
-              className="nx-button nx-button-outline"
-            >
-              +2 admissions <ArrowUpRight size={18} />
-            </Link>
-          </div>
+          <div className="ch-next-foot"><p>Questions about admissions or school life? Our team can help you plan the next step.</p><Link to="/contact" className="ch-text-link">Contact the school office</Link></div>
         </div>
       </section>
     </main>

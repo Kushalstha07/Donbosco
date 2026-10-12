@@ -13,14 +13,16 @@ Open the URL printed by Vite, usually `http://127.0.0.1:5173/`. To make a produc
 
 ## What's included
 
-- A story-led homepage with rotating photography, a pathway explorer, interactive Salesian principles, a photo rail and admission calls to action.
+- A photo-led four-section homepage with animated school figures, photographic pathway tabs, a school-life collage, and illustrated admission guidance.
 - Purpose-built +2 programme pages with subject group tabs, plus interactive school and +2 admissions pages.
 - Searchable staff directory, facility spotlight, accordions for rules, and a searchable school bus route list.
 - Site-wide page search, responsive mega navigation, mobile menu, scroll reveals, transitions, photo albums and a gallery lightbox.
-- All main destinations from the current site's navigation: Home; About (8 pages); School (6); +2 (6); photo and video galleries; Alumni; Downloads; Contact. Gallery album routes are included too.
+- Main destinations: Home; About (4 pages); School (6); +2 (6); photo and video galleries; Alumni; Downloads; Contact. Gallery album routes are included too. Older About leadership URLs lead to the combined Leadership page.
 
-The route map is in `src/App.jsx`. The homepage is in `src/NextHome.jsx`; the programme, history, Don Bosco and rules experiences are in `src/CuratedPages.jsx`. Styling is in `src/styles.css`, `src/next.css` and `src/inner.css`. Adapted source text is in `src/source-content.json`; images are in `public/images/`.
+The route map is in `src/App.jsx`. The homepage is in `src/NextHome.jsx`, with its styling in `src/compact.css`; the programme, history, Don Bosco and rules experiences are in `src/CuratedPages.jsx`. Shared styling is in `src/styles.css`, `src/inner.css` and `src/redesign.css`. Adapted source text is in `src/source-content.json`; images are in `public/images/`.
 
 ## Content to verify before an official launch
 
 Ask the school to confirm current staff and council names, admission dates and requirements, scholarships, policies, bus routes, contact details and available publications. Longer source details remain accessible in expandable sections where useful. The current Downloads page lists no downloadable files; this concept links to the existing annual report and admissions pages. The old site's alumni text refers to a different Don Bosco institution, so this concept directs alumni to the school office. The Rector Major and Provincial content was updated using [Don Bosco South Asia's February 2026 announcement](https://donboscosouthasia.org/News-Info?id=12033&title=Fr.-Sunil-Kerketta-Installed-as-18th-Provincial-of-Kolkata-Salesians).
+
+The homepage figures (75+ teachers, 5,000+ graduates, 50+ programmes and 20+ clubs/activities) were supplied for this design and should be verified with the school before publication.
